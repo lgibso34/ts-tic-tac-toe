@@ -1,27 +1,26 @@
-import React, { FC, useState, memo, useRef, useCallback, useReducer } from 'react'
+import React, { FC, memo, useRef, useCallback, useReducer } from 'react'
 import '../index.css'
 
 interface SquareProps{
   index: number
   value: number | string | null
-  onClick: (e: React.MouseEvent) => void
+  onClick: (i: number) => void
 }
 
-const Square: FC<SquareProps> = memo(({index, value, onClick}) => {
+const Square = memo<SquareProps>(({index, value, onClick}) => {
   const renders = useRef<number>(0);
   console.log("renders at index: " + index, ++renders.current)
 
     return (
-      <button className="square" onClick={onClick}>
+      <button className="square" onClick={() => onClick(index)}>
         {value}
       </button>
     );
 })
 
 const Board: FC = () => {
-  // console.log('board rendered')
   const [{squares, xIsNext}, dispatch] = useReducer(reducer, defaultState)
-  const renderSquare = (i: number) => <Square key={i} index={i} value={squares[i]} onClick={() => handleClick(i)}/>
+  const renderSquare = (i: number) => <Square key={i} index={i} value={squares[i]} onClick={handleClick}/>
 
   const handleClick = useCallback(
     (i: number) => {
@@ -39,17 +38,17 @@ const Board: FC = () => {
     return rows.map((numArr, idx) => {
       return (
         <div key={idx} className="board-row">
-          {numArr.map(num => <>{renderSquare(num)}</>)}
+          {numArr.map((num, i) => <React.Fragment key={i}>{renderSquare(num)}</React.Fragment>)}
         </div>
       )
     })
   }
   
     return (
-      <div>
+      <>
         <div className="status">{status}</div>
         {generateRows()}
-      </div>
+      </>
     );
 }
 
