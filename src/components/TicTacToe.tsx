@@ -1,32 +1,34 @@
-import React, { FC, useState } from 'react'
+import React, { FC, useState, memo, useRef, useCallback, useReducer } from 'react'
 import '../index.css'
 
 interface SquareProps{
+  index: number
   value: number | string | null
   onClick: (e: React.MouseEvent) => void
 }
 
-const Square: FC<SquareProps> = ({value, onClick}) => {
+const Square: FC<SquareProps> = memo(({index, value, onClick}) => {
+  const renders = useRef<number>(0);
+  console.log("renders at index: " + index, ++renders.current)
+
     return (
       <button className="square" onClick={onClick}>
         {value}
       </button>
     );
-}
+})
 
 const Board: FC = () => {
-  const [squares, setSquares] = useState<string[]>(Array(9).fill(''))
-  const [xIsNext, setXIsNext] = useState<boolean>(true)
+  // console.log('board rendered')
+  const [{squares, xIsNext}, dispatch] = useReducer(reducer, defaultState)
+  const renderSquare = (i: number) => <Square key={i} index={i} value={squares[i]} onClick={() => handleClick(i)}/>
 
-  const renderSquare = (i: number) => <Square value={squares[i]} onClick={() => handleClick(i)}/>
-
-  const handleClick = (i: number) => {
-    const tSquares = squares.slice()
-    if(calculateWinner(tSquares) || tSquares[i]) return
-    tSquares[i] = xIsNext ? 'X' : 'O'
-    setSquares(tSquares)
-    setXIsNext(!xIsNext)
-  };
+  const handleClick = useCallback(
+    (i: number) => {
+      dispatch({type: 'handleClick', payload: {idx: i}})
+    },
+    [dispatch]
+  )
 
   const winner = calculateWinner(squares)
 
@@ -49,6 +51,26 @@ const Board: FC = () => {
         {generateRows()}
       </div>
     );
+}
+
+const defaultState =   {
+  squares: Array(9).fill(''),
+  xIsNext: true,
+}
+
+const reducer = (state: any, action: {type: string, payload: any}) => {
+  switch(action.type){
+    case 'handleClick':
+        const tSquares = [...state.squares]
+        if(calculateWinner(tSquares) || tSquares[action.payload.idx]) return state
+        tSquares[action.payload.idx] = state.xIsNext ? 'X' : 'O'
+        return {
+            squares: tSquares,
+            xIsNext: !state.xIsNext
+        }
+    default:
+      return state;
+  }
 }
 
 const Game: FC = () => {
