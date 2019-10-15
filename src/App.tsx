@@ -4,6 +4,7 @@ import './App.css';
 import { MyForm } from './components/MyForm';
 import TextField from './components/TextField';
 import TicTacToe from './components/TicTacToe'
+import KanyeRest from './components/KanyeRest'
 
 const App: React.FC = () => {
   return (
@@ -11,6 +12,7 @@ const App: React.FC = () => {
         {/* <MyForm firstName="Hello" lastName="World" age={23} /> */}
         <TextField text="Hello World"  />
         <TicTacToe />
+        <KanyeRest />
     </div>
   );
 }
