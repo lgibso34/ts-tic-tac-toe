@@ -4,23 +4,49 @@ import '../index.css'
 interface SquareProps{
   index: number
   value: number | string | null
+  selected: boolean
   onClick: (i: number) => void
 }
 
-const Square = memo<SquareProps>(({index, value, onClick}) => {
+const Square = memo<SquareProps>(({index, value, onClick, selected}) => {
   const renders = useRef<number>(0);
   console.log("renders at index: " + index, ++renders.current)
-
     return (
-      <button className="square" onClick={() => onClick(index)}>
+      <button className={`square${selected ? " red" : ""}`} onClick={() => onClick(index)}>
         {value}
       </button>
     );
 })
 
+const defaultState =   {
+  squares: Array(9).fill(''),
+  sqSelected: Array(9).fill(false),
+  xIsNext: true,
+}
+
+const reducer = (state: any, action: {type: string, payload: any}) => {
+  let tSquares = [...state.squares]
+  let tSqSelected = [...state.sqSelected]
+  switch(action.type){
+    case 'handleClick':
+        if(calculateWinner(tSquares) || tSquares[action.payload.idx]) return state
+        tSquares[action.payload.idx] = state.xIsNext ? 'X' : 'O'
+        tSqSelected[action.payload.idx] = true
+        return {
+            squares: tSquares,
+            sqSelected: tSqSelected,
+            xIsNext: !state.xIsNext
+        }
+    case 'clear':
+      return defaultState
+    default:
+      return state;
+  }
+}
+
 const Board: FC = () => {
-  const [{squares, xIsNext}, dispatch] = useReducer(reducer, defaultState)
-  const renderSquare = (i: number) => <Square key={i} index={i} value={squares[i]} onClick={handleClick}/>
+  const [{squares, sqSelected, xIsNext}, dispatch] = useReducer(reducer, defaultState)
+  const renderSquare = (i: number) => <Square key={i} index={i} value={squares[i]} selected={sqSelected[i]} onClick={handleClick}/>
 
   const handleClick = useCallback(
     (i: number) => {
@@ -28,6 +54,10 @@ const Board: FC = () => {
     },
     [dispatch]
   )
+
+  const clearTicTacToe = () => {
+    dispatch({type: 'clear', payload: null})
+  }
 
   const winner = calculateWinner(squares)
 
@@ -38,7 +68,9 @@ const Board: FC = () => {
     return rows.map((numArr, idx) => {
       return (
         <div key={idx} className="board-row">
-          {numArr.map((num, i) => <React.Fragment key={i}>{renderSquare(num)}</React.Fragment>)}
+          {/* {numArr.map((num, i) => <React.Fragment key={i}>{renderSquare(num)}</React.Fragment>)} */}
+          {numArr.map((num, i) => <Square key={i} index={num} value={squares[num]} selected={sqSelected[num]} onClick={handleClick}/>)}
+          
         </div>
       )
     })
@@ -48,28 +80,9 @@ const Board: FC = () => {
       <>
         <div className="status">{status}</div>
         {generateRows()}
+        <button onClick={clearTicTacToe}>Reset</button>
       </>
     );
-}
-
-const defaultState =   {
-  squares: Array(9).fill(''),
-  xIsNext: true,
-}
-
-const reducer = (state: any, action: {type: string, payload: any}) => {
-  switch(action.type){
-    case 'handleClick':
-        const tSquares = [...state.squares]
-        if(calculateWinner(tSquares) || tSquares[action.payload.idx]) return state
-        tSquares[action.payload.idx] = state.xIsNext ? 'X' : 'O'
-        return {
-            squares: tSquares,
-            xIsNext: !state.xIsNext
-        }
-    default:
-      return state;
-  }
 }
 
 const Game: FC = () => {
