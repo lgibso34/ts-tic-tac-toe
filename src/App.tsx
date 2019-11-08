@@ -10,9 +10,9 @@ const App: React.FC = () => {
   return (
     <div className="App">
         {/* <MyForm firstName="Hello" lastName="World" age={23} /> */}
-        <TextField text="Hello World"  />
+        <TextField text="hellow world"/>
         <TicTacToe />
-        <KanyeRest />
+        {/* <KanyeRest /> */}
     </div>
   );
 }
